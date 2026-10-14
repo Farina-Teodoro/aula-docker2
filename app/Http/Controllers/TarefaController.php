@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\TarefaRequest;
 use App\Models\Tarefa;
 use Illuminate\Http\Request;
 
@@ -12,7 +13,9 @@ class TarefaController extends Controller
      */
     public function index()
     {
-        //
+        $tarefas = Tarefa::query()->latest()->get();
+
+        return response()->json($tarefas);
     }
 
     /**
@@ -20,15 +23,16 @@ class TarefaController extends Controller
      */
     public function create()
     {
-        //
+        return view('tarefas.create');
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(TarefaRequest $request)
     {
-        //
+        $tarefa = Tarefa::create($request->all());
+        return response()->json($tarefa);
     }
 
     /**
@@ -44,7 +48,7 @@ class TarefaController extends Controller
      */
     public function edit(Tarefa $tarefa)
     {
-        //
+        return view('tarefas.edit', compact('tarefa'));
     }
 
     /**
@@ -52,7 +56,9 @@ class TarefaController extends Controller
      */
     public function update(Request $request, Tarefa $tarefa)
     {
-        //
+        $tarefa->update($this->validatedData($request));
+
+        return to_route('tarefas.index')->with('sucesso', 'Tarefa atualizada com sucesso.');
     }
 
     /**
@@ -60,6 +66,19 @@ class TarefaController extends Controller
      */
     public function destroy(Tarefa $tarefa)
     {
-        //
+        $tarefa->delete();
+
+        return to_route('tarefas.index')->with('sucesso', 'Tarefa removida com sucesso.');
+    }
+
+    private function validatedData(Request $request): array
+    {
+        return $request->validate([
+            'titulo' => ['required', 'string', 'max:255'],
+            'descricao' => ['required', 'string'],
+            'concluida' => ['nullable', 'boolean'],
+        ]) + [
+            'concluida' => $request->boolean('concluida'),
+        ];
     }
 }
