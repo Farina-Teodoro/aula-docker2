@@ -12,7 +12,7 @@ class TarefaRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -25,8 +25,7 @@ class TarefaRequest extends FormRequest
         return [
             'titulo' => ['required', 'string', 'max:255'],
             'descricao' => ['required', 'min:1'],
-            'concluida' => ['boolean'],
-            //
+            'concluida' => ['nullable', 'boolean'],
         ];
     }
 }

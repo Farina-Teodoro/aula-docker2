@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\TarefaRequest;
 use App\Models\Tarefa;
-use Illuminate\Http\Request;
 
 class TarefaController extends Controller
 {
@@ -15,7 +14,11 @@ class TarefaController extends Controller
     {
         $tarefas = Tarefa::query()->latest()->get();
 
-        return response()->json($tarefas);
+        if (request()->expectsJson()) {
+            return response()->json($tarefas);
+        }
+
+        return view('tarefas.index', compact('tarefas'));
     }
 
     /**
@@ -31,8 +34,13 @@ class TarefaController extends Controller
      */
     public function store(TarefaRequest $request)
     {
-        $tarefa = Tarefa::create($request->all());
-        return response()->json($tarefa);
+        $tarefa = Tarefa::create($this->validatedData($request));
+
+        if ($request->expectsJson()) {
+            return response()->json($tarefa, 201);
+        }
+
+        return to_route('tarefas.index')->with('sucesso', 'Tarefa criada com sucesso.');
     }
 
     /**
@@ -40,7 +48,7 @@ class TarefaController extends Controller
      */
     public function show(Tarefa $tarefa)
     {
-        //
+        return response()->json($tarefa);
     }
 
     /**
@@ -54,9 +62,13 @@ class TarefaController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Tarefa $tarefa)
+    public function update(TarefaRequest $request, Tarefa $tarefa)
     {
         $tarefa->update($this->validatedData($request));
+
+        if ($request->expectsJson()) {
+            return response()->noContent();
+        }
 
         return to_route('tarefas.index')->with('sucesso', 'Tarefa atualizada com sucesso.');
     }
@@ -68,17 +80,15 @@ class TarefaController extends Controller
     {
         $tarefa->delete();
 
+        if (request()->expectsJson()) {
+            return response()->noContent();
+        }
+
         return to_route('tarefas.index')->with('sucesso', 'Tarefa removida com sucesso.');
     }
 
-    private function validatedData(Request $request): array
+    private function validatedData(TarefaRequest $request): array
     {
-        return $request->validate([
-            'titulo' => ['required', 'string', 'max:255'],
-            'descricao' => ['required', 'string'],
-            'concluida' => ['nullable', 'boolean'],
-        ]) + [
-            'concluida' => $request->boolean('concluida'),
-        ];
+        return $request->validated() + ['concluida' => $request->boolean('concluida')];
     }
 }
