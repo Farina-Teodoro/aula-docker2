@@ -67,7 +67,7 @@ class TarefaController extends Controller
         $tarefa->update($this->validatedData($request));
 
         if ($request->expectsJson()) {
-            return response()->noContent();
+            return response()->json($tarefa->fresh());
         }
 
         return to_route('tarefas.index')->with('sucesso', 'Tarefa atualizada com sucesso.');

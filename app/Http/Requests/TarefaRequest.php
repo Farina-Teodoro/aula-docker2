@@ -24,7 +24,7 @@ class TarefaRequest extends FormRequest
     {
         return [
             'titulo' => ['required', 'string', 'max:255'],
-            'descricao' => ['required', 'min:1'],
+            'descricao' => ['nullable', 'string'],
             'concluida' => ['nullable', 'boolean'],
         ];
     }
